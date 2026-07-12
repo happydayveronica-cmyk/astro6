@@ -431,7 +431,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/astropy-fits@1.0.0/dist/astropy-fits.min.js"></script>
-    <script>
+        <script>
         // 요소 선택
         const uploadBox = document.getElementById('uploadBox');
         const fileInput = document.getElementById('fileInput');
@@ -439,11 +439,20 @@
         const error = document.getElementById('error');
         const success = document.getElementById('success');
         const imageContainer = document.getElementById('imageContainer');
+        const basicInfo = document.getElementById('basicInfo');
+        const statsInfo = document.getElementById('statsInfo');
+        const headerInfo = document.getElementById('headerInfo');
+        const histogram = document.getElementById('histogram');
 
-        // 업로드 박스 이벤트
-        uploadBox.addEventListener('click', () => fileInput.click());
+        // 업로드 박스 클릭 이벤트
+        uploadBox.addEventListener('click', () => {
+            fileInput.click();
+        });
 
-        fileInput.addEventListener('change', handleFileSelect);
+        // 파일 선택 처리
+        fileInput.addEventListener('change', (e) => {
+            handleFileSelect(e.target.files[0]);
+        });
 
         // 드래그 앤 드롭
         uploadBox.addEventListener('dragover', (e) => {
@@ -459,12 +468,220 @@
             e.preventDefault();
             uploadBox.classList.remove('dragover');
             
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                fileInput.files = files;
-                handleFileSelect({ target: fileInput });
+            if (e.dataTransfer.files.length > 0) {
+                handleFileSelect(e.dataTransfer.files[0]);
             }
         });
 
-        // 파일 선택 처리
-        async function handleFileSelect(event) {
+        // 파일 처리 함수
+        async function handleFileSelect(file) {
+            if (!file) return;
+
+            // 파일 형식 확인
+            const validExtensions = ['.fits', '.fit', '.fts'];
+            const fileName = file.name.toLowerCase();
+            const isValidFile = validExtensions.some(ext => fileName.endsWith(ext));
+
+            if (!isValidFile) {
+                showError('FITS 파일만 업로드 가능합니다. (.fits, .fit, .fts)');
+                return;
+            }
+
+            showLoading(true);
+            hideMessages();
+
+            try {
+                // 파일을 ArrayBuffer로 읽기
+                const arrayBuffer = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = reject;
+                    reader.readAsArrayBuffer(file);
+                });
+
+                // FITS 파일 파싱
+                const fits = new FITS.File(arrayBuffer);
+                const hdu = fits.hdu[0];
+
+                // 기본 정보 표시
+                displayBasicInfo(file.name, hdu);
+
+                // 이미지 렌더링
+                if (hdu.data) {
+                    renderImage(hdu);
+                    displayStats(hdu);
+                    drawHistogram(hdu);
+                }
+
+                // 헤더 정보 표시
+                displayHeaderInfo(hdu);
+
+                showSuccess('파일이 성공적으로 로드되었습니다!');
+
+            } catch (err) {
+                console.error('오류:', err);
+                showError('파일 처리 중 오류가 발생했습니다: ' + err.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 기본 정보 표시
+        function displayBasicInfo(fileName, hdu) {
+            document.getElementById('fileName').textContent = fileName;
+            document.getElementById('imageSize').textContent = `${hdu.naxis[0]} × ${hdu.naxis[1]}`;
+            document.getElementById('bitDepth').textContent = `${hdu.bitpix}-bit`;
+            
+            const expTime = hdu.header['EXPTIME'] || '-';
+            document.getElementById('expTime').textContent = expTime;
+            
+            const telescope = hdu.header['TELESCOP'] || '-';
+            document.getElementById('telescope').textContent = telescope;
+            
+            const filter = hdu.header['FILTER'] || '-';
+            document.getElementById('filter').textContent = filter;
+
+            basicInfo.style.display = 'block';
+        }
+
+        // 이미지 렌더링
+        function renderImage(hdu) {
+            const canvas = document.createElement('canvas');
+            canvas.width = hdu.naxis[0];
+            canvas.height = hdu.naxis[1];
+
+            const ctx = canvas.getContext('2d');
+            const imageData = ctx.createImageData(canvas.width, canvas.height);
+
+            const data = hdu.data;
+            const min = Math.min(...data);
+            const max = Math.max(...data);
+            const range = max - min || 1;
+
+            // 그레이스케일 이미지 생성
+            for (let i = 0; i < data.length; i++) {
+                const normalized = (data[i] - min) / range;
+                const gray = Math.floor(normalized * 255);
+
+                imageData.data[i * 4] = gray;      // R
+                imageData.data[i * 4 + 1] = gray;  // G
+                imageData.data[i * 4 + 2] = gray;  // B
+                imageData.data[i * 4 + 3] = 255;   // A
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+
+            imageContainer.innerHTML = '';
+            imageContainer.appendChild(canvas);
+        }
+
+        // 통계 정보 표시
+        function displayStats(hdu) {
+            const data = hdu.data;
+            
+            const min = Math.min(...data);
+            const max = Math.max(...data);
+            const mean = data.reduce((a, b) => a + b, 0) / data.length;
+            const variance = data.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / data.length;
+            const std = Math.sqrt(variance);
+
+            document.getElementById('minValue').textContent = min.toFixed(2);
+            document.getElementById('maxValue').textContent = max.toFixed(2);
+            document.getElementById('meanValue').textContent = mean.toFixed(2);
+            document.getElementById('stdValue').textContent = std.toFixed(2);
+
+            statsInfo.style.display = 'block';
+        }
+
+        // 히스토그램 그리기
+        function drawHistogram(hdu) {
+            const canvas = document.getElementById('histogramCanvas');
+            const ctx = canvas.getContext('2d');
+            const data = hdu.data;
+
+            // 히스토그램 계산 (256 빈)
+            const bins = 256;
+            const histogram = new Array(bins).fill(0);
+            const min = Math.min(...data);
+            const max = Math.max(...data);
+            const range = max - min || 1;
+
+            for (let i = 0; i < data.length; i++) {
+                const normalized = (data[i] - min) / range;
+                const binIndex = Math.floor(normalized * (bins - 1));
+                histogram[binIndex]++;
+            }
+
+            const maxCount = Math.max(...histogram);
+
+            // 캔버스 초기화
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 히스토그램 그리기
+            const barWidth = canvas.width / bins;
+            ctx.fillStyle = '#667eea';
+
+            for (let i = 0; i < bins; i++) {
+                const height = (histogram[i] / maxCount) * canvas.height;
+                ctx.fillRect(i * barWidth, canvas.height - height, barWidth, height);
+            }
+
+            histogram.style.display = 'block';
+        }
+
+        // 헤더 정보 표시
+        function displayHeaderInfo(hdu) {
+            const basicHeaders = ['SIMPLE', 'BITPIX', 'NAXIS', 'NAXIS1', 'NAXIS2', 'EXPTIME', 'TELESCOP', 'INSTRUME', 'FILTER', 'OBSERVER', 'DATE-OBS'];
+            
+            let basicHtml = '';
+            let advancedHtml = '';
+
+            for (const [key, value] of Object.entries(hdu.header)) {
+                const row = `<tr><td>${key}</td><td>${value}</td></tr>`;
+                
+                if (basicHeaders.includes(key)) {
+                    basicHtml += row;
+                } else {
+                    advancedHtml += row;
+                }
+            }
+
+            document.getElementById('basicHeader').innerHTML = basicHtml;
+            document.getElementById('advancedHeader').innerHTML = advancedHtml;
+            headerInfo.style.display = 'block';
+        }
+
+        // 탭 전환
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // 메시지 함수들
+        function showLoading(show) {
+            loading.classList.toggle('active', show);
+        }
+
+        function showError(message) {
+            error.textContent = '❌ ' + message;
+            error.classList.add('active');
+        }
+
+        function showSuccess(message) {
+            success.textContent = '✅ ' + message;
+            success.classList.add('active');
+        }
+
+        function hideMessages() {
+            error.classList.remove('active');
+            success.classList.remove('active');
+        }
+    </script>
