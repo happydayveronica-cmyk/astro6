@@ -38,7 +38,6 @@
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .header p {
@@ -89,12 +88,10 @@
         .upload-box h3 {
             color: #667eea;
             margin-bottom: 10px;
-            font-size: 1.2em;
         }
 
         .upload-box p {
             color: #666;
-            font-size: 0.95em;
             margin-bottom: 15px;
         }
 
@@ -109,19 +106,13 @@
             padding: 12px 30px;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 1em;
             font-weight: 600;
             transition: all 0.3s ease;
-            display: inline-block;
         }
 
         .upload-btn:hover {
             transform: scale(1.05);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .upload-btn:active {
-            transform: scale(0.98);
         }
 
         .info-section {
@@ -134,7 +125,6 @@
         .info-section h3 {
             color: #667eea;
             margin-bottom: 15px;
-            font-size: 1.1em;
         }
 
         .info-item {
@@ -172,19 +162,16 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
         }
 
         .image-container canvas {
             max-width: 100%;
             max-height: 400px;
-            display: block;
         }
 
         .image-placeholder {
             color: #999;
             text-align: center;
-            padding: 40px;
         }
 
         .histogram {
@@ -235,18 +222,6 @@
 
         .error.active {
             display: block;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         .success {
@@ -260,98 +235,6 @@
 
         .success.active {
             display: block;
-            animation: slideIn 0.3s ease;
-        }
-
-        .file-info {
-            background: #fff3e0;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #f57c00;
-            display: none;
-        }
-
-        .file-info.active {
-            display: block;
-        }
-
-        .file-info strong {
-            color: #e65100;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 10px;
-            border-bottom: 2px solid #e0e0e0;
-            margin-bottom: 20px;
-        }
-
-        .tab-btn {
-            padding: 12px 20px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            color: #999;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-        .tab-btn.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-        }
-
-        .tab-btn:hover {
-            color: #667eea;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .header-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9em;
-        }
-
-        .header-table td {
-            padding: 8px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .header-table td:first-child {
-            font-weight: 600;
-            color: #764ba2;
-            width: 150px;
-        }
-
-        .header-table td:last-child {
-            font-family: 'Courier New', monospace;
-            color: #333;
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-
-            .header h1 {
-                font-size: 1.8em;
-            }
-
-            .header {
-                padding: 20px;
-            }
-
-            .main-content {
-                padding: 20px;
-            }
         }
 
         .stats-grid {
@@ -380,6 +263,64 @@
             color: #667eea;
             font-family: 'Courier New', monospace;
         }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+
+        .header-table td {
+            padding: 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .header-table td:first-child {
+            font-weight: 600;
+            color: #764ba2;
+            width: 150px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
     </style>
 </head>
 <body>
@@ -402,12 +343,11 @@
 
                 <div class="loading" id="loading">
                     <div class="spinner"></div>
-                    <p style="margin-top: 10px; color: #666;">파일 처리 중...</p>
+                    <p style="margin-top: 10px;">파일 처리 중...</p>
                 </div>
 
                 <div class="error" id="error"></div>
                 <div class="success" id="success"></div>
-                <div class="file-info" id="fileInfo"></div>
 
                 <!-- 기본 정보 -->
                 <div class="info-section" id="basicInfo" style="display: none;">
@@ -457,3 +397,74 @@
                         <div class="stat-box">
                             <div class="stat-label">표준편차</div>
                             <div class="stat-value" id="stdValue">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 오른쪽: 이미지 표시 섹션 -->
+            <div class="image-section">
+                <div class="image-container" id="imageContainer">
+                    <div class="image-placeholder">이미지가 표시됩니다</div>
+                </div>
+
+                <div class="histogram" id="histogram" style="display: none;">
+                    <canvas id="histogramCanvas"></canvas>
+                </div>
+
+                <div class="info-section" id="headerInfo" style="display: none;">
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="switchTab('basic')">기본</button>
+                        <button class="tab-btn" onclick="switchTab('advanced')">상세</button>
+                    </div>
+
+                    <div id="basic" class="tab-content active">
+                        <table class="header-table" id="basicHeader"></table>
+                    </div>
+
+                    <div id="advanced" class="tab-content">
+                        <table class="header-table" id="advancedHeader"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/astropy-fits@1.0.0/dist/astropy-fits.min.js"></script>
+    <script>
+        // 요소 선택
+        const uploadBox = document.getElementById('uploadBox');
+        const fileInput = document.getElementById('fileInput');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const success = document.getElementById('success');
+        const imageContainer = document.getElementById('imageContainer');
+
+        // 업로드 박스 이벤트
+        uploadBox.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // 드래그 앤 드롭
+        uploadBox.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadBox.classList.add('dragover');
+        });
+
+        uploadBox.addEventListener('dragleave', () => {
+            uploadBox.classList.remove('dragover');
+        });
+
+        uploadBox.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadBox.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect({ target: fileInput });
+            }
+        });
+
+        // 파일 선택 처리
+        async function handleFileSelect(event) {
